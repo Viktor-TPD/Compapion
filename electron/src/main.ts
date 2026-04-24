@@ -6,12 +6,28 @@ import {
   nativeImage,
   ipcMain,
   dialog,
-  shell,
+  clipboard,
 } from "electron";
 import * as path from "path";
 import * as fs from "fs";
 import { SavedVarsWatcher } from "./watcher";
 import type { WatcherState } from "./watcher";
+
+// ─── App logger ──────────────────────────────────────────────────────────────
+
+const LOG_PATH = path.join(app.getPath("userData"), "compapion.log");
+const MAX_LOG_BYTES = 2 * 1024 * 1024; // 2MB
+
+function log(msg: string) {
+  const line = `[${new Date().toISOString()}] ${msg}\n`;
+  try {
+    // Rotate if too large
+    if (fs.existsSync(LOG_PATH) && fs.statSync(LOG_PATH).size > MAX_LOG_BYTES) {
+      fs.renameSync(LOG_PATH, LOG_PATH + ".old");
+    }
+    fs.appendFileSync(LOG_PATH, line);
+  } catch { /* ignore logging errors */ }
+}
 
 // ─── Config persistence ──────────────────────────────────────────────────────
 
@@ -20,15 +36,13 @@ const CONFIG_PATH = path.join(app.getPath("userData"), "config.json");
 interface Config {
   wowDir: string | null;
   accountName: string | null;
-  realmName: string | null;
-  characterName: string | null;
 }
 
 function loadConfig(): Config {
   try {
     return JSON.parse(fs.readFileSync(CONFIG_PATH, "utf-8"));
   } catch {
-    return { wowDir: null, accountName: null, realmName: null, characterName: null };
+    return { wowDir: null, accountName: null };
   }
 }
 
@@ -37,14 +51,12 @@ function saveConfig(cfg: Config) {
 }
 
 function buildLuaPath(cfg: Config): string | null {
-  if (!cfg.wowDir || !cfg.accountName || !cfg.realmName || !cfg.characterName) return null;
+  if (!cfg.wowDir || !cfg.accountName) return null;
   return path.join(
     cfg.wowDir,
     "WTF",
     "Account",
     cfg.accountName,
-    cfg.realmName,
-    cfg.characterName,
     "SavedVariables",
     "Compapion.lua"
   );
@@ -56,11 +68,9 @@ const ICON_DIR = app.isPackaged
   ? path.join(process.resourcesPath, "assets")
   : path.join(app.getAppPath(), "assets");
 
-function getTrayIcon(status: WatcherState["status"]): Electron.NativeImage {
-  const name = status === "ok" ? "tray-green" : status === "error" ? "tray-red" : "tray-yellow";
-  const file = path.join(ICON_DIR, `${name}.png`);
+function getTrayIcon(_status: WatcherState["status"]): Electron.NativeImage {
+  const file = path.join(ICON_DIR, "tray.png");
   if (fs.existsSync(file)) return nativeImage.createFromPath(file);
-  // Fallback: empty 16x16
   return nativeImage.createEmpty();
 }
 
@@ -69,6 +79,7 @@ function getTrayIcon(status: WatcherState["status"]): Electron.NativeImage {
 let mainWindow: BrowserWindow | null = null;
 
 function createWindow(state: WatcherState, config: Config): BrowserWindow {
+  const iconFile = path.join(ICON_DIR, "icon.png");
   const win = new BrowserWindow({
     width: 320,
     height: 420,
@@ -76,6 +87,7 @@ function createWindow(state: WatcherState, config: Config): BrowserWindow {
     frame: false,
     alwaysOnTop: true,
     skipTaskbar: true,
+    icon: fs.existsSync(iconFile) ? iconFile : undefined,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -102,6 +114,7 @@ app.whenReady().then(() => {
   function onStateChange(newState: WatcherState) {
     state = newState;
     tray.setImage(getTrayIcon(state.status));
+    log(`Status: ${state.status}${state.lastError ? " — " + state.lastError : ""}`);
     if (mainWindow?.isVisible()) {
       mainWindow.webContents.send("state-update", state);
     }
@@ -150,8 +163,7 @@ app.whenReady().then(() => {
     const luaPath = buildLuaPath(config);
     if (!luaPath) return { error: "WoW directory not configured" };
     watcher?.stop();
-    watcher = new SavedVarsWatcher(onStateChange);
-    watcher.start(luaPath);
+    startWatcher();
     return { ok: true };
   });
 
@@ -161,20 +173,12 @@ app.whenReady().then(() => {
 
     config.wowDir = result.filePaths[0];
 
-    // Try to auto-detect account/realm/character from WTF directory
+    // Auto-detect account name from WTF directory
     const wtfPath = path.join(config.wowDir, "WTF", "Account");
     if (fs.existsSync(wtfPath)) {
-      const accounts = fs.readdirSync(wtfPath).filter((n) => !n.startsWith("."));
+      const accounts = fs.readdirSync(wtfPath).filter((n) => !n.startsWith(".") && n !== "SavedVariables");
       if (accounts.length === 1) {
         config.accountName = accounts[0];
-        const realmPath = path.join(wtfPath, accounts[0]);
-        const realms = fs.readdirSync(realmPath).filter((n) => !n.startsWith(".") && n !== "SavedVariables");
-        if (realms.length === 1) {
-          config.realmName = realms[0];
-          const charPath = path.join(realmPath, realms[0]);
-          const chars = fs.readdirSync(charPath).filter((n) => !n.startsWith("."));
-          if (chars.length === 1) config.characterName = chars[0];
-        }
       }
     }
 
@@ -189,6 +193,18 @@ app.whenReady().then(() => {
     startWatcher();
     return config;
   });
+
+  ipcMain.handle("copy-logs", () => {
+    try {
+      const contents = fs.existsSync(LOG_PATH) ? fs.readFileSync(LOG_PATH, "utf-8") : "No logs yet.";
+      clipboard.writeText(contents);
+      return { ok: true };
+    } catch {
+      return { error: "Could not read log file." };
+    }
+  });
+
+  log("Compapion started");
 
   // First launch — prompt for WoW dir if not set
   if (!config.wowDir) {

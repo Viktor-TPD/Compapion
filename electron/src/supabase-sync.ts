@@ -30,7 +30,8 @@ export async function syncToSupabase(data: CompapionSavedVars): Promise<void> {
   if (charErr) throw charErr;
   const characterId = charRow.id;
 
-  // Upsert professions
+  // Replace professions — delete all then reinsert so removed professions are cleared
+  await supabase.from("professions").delete().eq("character_id", characterId);
   if (data.professions?.length) {
     const rows = data.professions.map((p) => ({
       character_id: characterId,
@@ -39,13 +40,12 @@ export async function syncToSupabase(data: CompapionSavedVars): Promise<void> {
       max_skill: p.max_skill,
       updated_at: new Date().toISOString(),
     }));
-    const { error } = await supabase
-      .from("professions")
-      .upsert(rows, { onConflict: "character_id,name" });
+    const { error } = await supabase.from("professions").insert(rows);
     if (error) throw error;
   }
 
-  // Upsert gear slots
+  // Replace gear slots — delete all then reinsert so unequipped items are cleared
+  await supabase.from("gear_slots").delete().eq("character_id", characterId);
   if (data.gear?.length) {
     const rows = data.gear.map((g) => ({
       character_id: characterId,
@@ -57,9 +57,7 @@ export async function syncToSupabase(data: CompapionSavedVars): Promise<void> {
       crafter_name: g.crafter_name ?? null,
       updated_at: new Date().toISOString(),
     }));
-    const { error } = await supabase
-      .from("gear_slots")
-      .upsert(rows, { onConflict: "character_id,slot" });
+    const { error } = await supabase.from("gear_slots").insert(rows);
     if (error) throw error;
   }
 

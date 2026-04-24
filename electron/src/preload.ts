@@ -6,6 +6,7 @@ contextBridge.exposeInMainWorld("compapion", {
   manualSync:  () => ipcRenderer.invoke("manual-sync"),
   pickWowDir:  () => ipcRenderer.invoke("pick-wow-dir"),
   saveConfig:  (cfg: unknown) => ipcRenderer.invoke("save-config", cfg),
+  copyLogs:    () => ipcRenderer.invoke("copy-logs"),
   onState:     (cb: (state: unknown) => void) => ipcRenderer.on("state-update", (_e, s) => cb(s)),
   onConfig:    (cb: (cfg: unknown) => void) => ipcRenderer.on("config-update", (_e, c) => cb(c)),
 });

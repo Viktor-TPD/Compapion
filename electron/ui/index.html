@@ -121,6 +121,7 @@
       padding: 16px;
       display: flex;
       gap: 8px;
+      flex-wrap: wrap;
     }
 
     .error-msg {
@@ -172,7 +173,9 @@
 
 <div class="actions">
   <button id="btn-sync">Sync Now</button>
+  <button id="btn-logs" class="secondary">Copy Logs</button>
 </div>
+<div class="error-msg" id="copy-msg"></div>
 
 <footer>Data syncs on skill-up, gear change, boss kill, and logout.</footer>
 
@@ -213,6 +216,14 @@
   document.getElementById('btn-sync').addEventListener('click', async () => {
     statusText.textContent = 'Syncing…';
     await api.manualSync();
+  });
+
+  document.getElementById('btn-logs').addEventListener('click', async () => {
+    const result = await api.copyLogs();
+    const msg = document.getElementById('copy-msg');
+    msg.style.color = result.error ? '#e94560' : '#4caf50';
+    msg.textContent = result.error ?? 'Logs copied to clipboard!';
+    setTimeout(() => { msg.textContent = ''; }, 3000);
   });
 
   document.getElementById('btn-browse').addEventListener('click', async () => {
