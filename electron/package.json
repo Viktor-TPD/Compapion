@@ -20,6 +20,10 @@
       "dist/**/*",
       "assets/**/*",
       "ui/**/*"
+    ],
+    "asarUnpack": [
+      "assets/**/*",
+      "ui/**/*"
     ]
   },
   "dependencies": {
