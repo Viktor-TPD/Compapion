@@ -1,9 +1,12 @@
 import { createClient } from "@supabase/supabase-js";
 import type { CompapionSavedVars } from "./lua-parser";
 
+const SUPABASE_URL = "https://djoohxupjiofjqelydhx.supabase.co";
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY ?? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqb29oeHVwamlvZmpxZWx5ZGh4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcwMjk0NjQsImV4cCI6MjA5MjYwNTQ2NH0.Zs0onap1IFTK7IuvWiA29KqnfClEmryL2VdE0SkHSyM";
+
 const supabase = createClient(
-  process.env.SUPABASE_URL!,
-  process.env.SUPABASE_ANON_KEY!
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
 );
 
 export async function syncToSupabase(data: CompapionSavedVars): Promise<void> {

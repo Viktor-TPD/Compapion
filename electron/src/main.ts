@@ -52,7 +52,9 @@ function buildLuaPath(cfg: Config): string | null {
 
 // ─── Tray icon helpers ───────────────────────────────────────────────────────
 
-const ICON_DIR = path.join(__dirname, "..", "assets");
+const ICON_DIR = app.isPackaged
+  ? path.join(process.resourcesPath, "assets")
+  : path.join(app.getAppPath(), "assets");
 
 function getTrayIcon(status: WatcherState["status"]): Electron.NativeImage {
   const name = status === "ok" ? "tray-green" : status === "error" ? "tray-red" : "tray-yellow";
@@ -80,7 +82,7 @@ function createWindow(state: WatcherState, config: Config): BrowserWindow {
     },
   });
 
-  win.loadFile(path.join(__dirname, "..", "ui", "index.html"));
+  win.loadFile(path.join(app.getAppPath(), "ui", "index.html"));
 
   win.on("blur", () => {
     win.hide();
@@ -115,6 +117,12 @@ app.whenReady().then(() => {
 
   tray = new Tray(getTrayIcon("idle"));
   tray.setToolTip("Compapion");
+
+  tray.setContextMenu(Menu.buildFromTemplate([
+    { label: "Compapion", enabled: false },
+    { type: "separator" },
+    { label: "Quit", click: () => app.quit() },
+  ]));
 
   tray.on("click", () => {
     if (!mainWindow) {
@@ -193,5 +201,5 @@ app.whenReady().then(() => {
     startWatcher();
   }
 
-  app.on("window-all-closed", (e: Event) => e.preventDefault());
+  app.on("window-all-closed", () => { /* keep alive as tray app */ });
 });

@@ -9,15 +9,17 @@
     "dist": "tsc && electron-builder"
   },
   "build": {
+    "forceCodeSigning": false,
     "appId": "com.compapion.app",
     "productName": "Compapion",
     "win": {
-      "target": "nsis",
+      "target": "zip",
       "icon": "assets/icon.ico"
     },
     "files": [
       "dist/**/*",
-      "assets/**/*"
+      "assets/**/*",
+      "ui/**/*"
     ]
   },
   "dependencies": {
@@ -27,7 +29,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
-    "electron": "^31.0.0",
+    "electron": "31.0.0",
     "electron-builder": "^24.0.0",
     "typescript": "^5.0.0"
   }
