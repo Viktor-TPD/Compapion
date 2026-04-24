@@ -1,0 +1,37 @@
+[
+  {
+    "name": "Edwin VanCleef",
+    "zone": "The Deadmines",
+    "unlocks_cap": 22
+  },
+  {
+    "name": "Charlga Razorflank",
+    "zone": "Razorfen Kraul",
+    "unlocks_cap": 29
+  },
+  {
+    "name": "Arcanist Doan",
+    "zone": "Scarlet Monastery - Library",
+    "unlocks_cap": 37
+  },
+  {
+    "name": "Archaedas",
+    "zone": "Uldaman",
+    "unlocks_cap": 42
+  },
+  {
+    "name": "Chief Ukorz Sandscalp",
+    "zone": "Zul'Farrak",
+    "unlocks_cap": 48
+  },
+  {
+    "name": "Shade of Eranikus",
+    "zone": "Sunken Temple",
+    "unlocks_cap": 52
+  },
+  {
+    "name": "Baron Rivendare",
+    "zone": "Stratholme",
+    "unlocks_cap": 60
+  }
+]

@@ -1,0 +1,34 @@
+{
+  "name": "compapion-electron",
+  "version": "0.1.0",
+  "description": "Compapion desktop tray app",
+  "main": "dist/main.js",
+  "scripts": {
+    "dev": "tsc --watch & electron .",
+    "build": "tsc",
+    "dist": "tsc && electron-builder"
+  },
+  "build": {
+    "appId": "com.compapion.app",
+    "productName": "Compapion",
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "files": [
+      "dist/**/*",
+      "assets/**/*"
+    ]
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.45.0",
+    "chokidar": "^3.6.0",
+    "fengari": "^0.1.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "electron": "^31.0.0",
+    "electron-builder": "^24.0.0",
+    "typescript": "^5.0.0"
+  }
+}

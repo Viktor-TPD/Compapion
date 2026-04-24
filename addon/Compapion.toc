@@ -1,0 +1,8 @@
+## Interface: 20500
+## Title: Compapion
+## Notes: Tracks professions, gear, and boss kills for the crafted-gear challenge.
+## Author: Pap
+## Version: 0.1.0
+## SavedVariables: CompapionDB
+
+Compapion.lua

@@ -1,0 +1,15 @@
+{
+  "name": "compapion",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "electron",
+    "bot"
+  ],
+  "scripts": {
+    "dev:bot": "npm run dev --workspace=bot",
+    "dev:electron": "npm run dev --workspace=electron",
+    "build:bot": "npm run build --workspace=bot",
+    "build:electron": "npm run build --workspace=electron"
+  }
+}

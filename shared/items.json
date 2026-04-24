@@ -1,0 +1,57 @@
+[
+  {
+    "id": 2581,
+    "name": "Linen Cloth",
+    "icon": "inv_fabric_linen_01"
+  },
+  {
+    "id": 2589,
+    "name": "Wool Cloth",
+    "icon": "inv_fabric_wool_01"
+  },
+  {
+    "id": 4338,
+    "name": "Silk Cloth",
+    "icon": "inv_fabric_silk_01"
+  },
+  {
+    "id": 14047,
+    "name": "Runecloth",
+    "icon": "inv_fabric_runecloth_01"
+  },
+  {
+    "id": 21877,
+    "name": "Netherweave Cloth",
+    "icon": "inv_fabric_netherweave"
+  },
+  {
+    "id": 3577,
+    "name": "Rough Stone",
+    "icon": "inv_stone_05"
+  },
+  {
+    "id": 2836,
+    "name": "Copper Bar",
+    "icon": "inv_ingot_copper"
+  },
+  {
+    "id": 3576,
+    "name": "Rough Grinding Stone",
+    "icon": "inv_stone_grindingstone_01"
+  },
+  {
+    "id": 5765,
+    "name": "Light Leather",
+    "icon": "inv_misc_leatherscrap_02"
+  },
+  {
+    "id": 2318,
+    "name": "Light Armor Kit",
+    "icon": "inv_misc_armorkit_01"
+  },
+  {
+    "id": 4234,
+    "name": "6-slot Bag",
+    "icon": "inv_misc_bag_07"
+  }
+]
