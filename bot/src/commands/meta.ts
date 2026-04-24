@@ -247,8 +247,8 @@ export async function execute(interaction: ChatInputCommandInteraction) {
     const channelId = process.env.GROUP_CHANNEL_ID;
     if (!guildId || !channelId) return interaction.editReply("GROUP_CHANNEL_ID not set in env.");
     const channel = await interaction.client.channels.fetch(channelId).catch(() => null);
-    if (!channel?.isTextBased()) return interaction.editReply("Couldn't find the group channel.");
-    await channel.send(`📢 **Announcement**\n${message}`);
+    if (!channel || !("send" in channel)) return interaction.editReply("Couldn't find the group channel.");
+    await (channel as any).send(`📢 **Announcement**\n${message}`);
     return interaction.editReply("Announcement posted.");
   }
 

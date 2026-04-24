@@ -1,4 +1,6 @@
-import "dotenv/config";
+import dotenv from "dotenv";
+import path from "path";
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 import { Client, GatewayIntentBits, Collection, Events, Interaction } from "discord.js";
 import { publishOverview } from "./overview";
 import { handleButton } from "./button-handler";

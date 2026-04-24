@@ -1,6 +1,8 @@
 // Run once to register slash commands as guild-specific (instant propagation during dev).
 // Switch to REST global registration only when shipping.
-import "dotenv/config";
+import dotenv from "dotenv";
+import path from "path";
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 import { REST, Routes } from "discord.js";
 
 import * as professionCmd from "./commands/profession";

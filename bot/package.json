@@ -4,7 +4,7 @@
   "description": "Compapion Discord bot",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "ts-node --esm src/index.ts",
+    "dev": "ts-node src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "register": "ts-node src/register-commands.ts"
