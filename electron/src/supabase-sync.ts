@@ -61,6 +61,26 @@ export async function syncToSupabase(data: CompapionSavedVars): Promise<void> {
     if (error) throw error;
   }
 
+  // Replace known recipes per profession — full replace when a profession's window is opened
+  if (data.known_recipes && Object.keys(data.known_recipes).length > 0) {
+    for (const [profession, entry] of Object.entries(data.known_recipes)) {
+      if (!entry.recipes?.length) continue;
+      await supabase
+        .from("known_recipes")
+        .delete()
+        .eq("character_id", characterId)
+        .eq("profession", profession);
+      const rows = entry.recipes.map((name) => ({
+        character_id: characterId,
+        profession,
+        recipe_name: name,
+        synced_at: new Date(entry.synced_at * 1000).toISOString(),
+      }));
+      const { error } = await supabase.from("known_recipes").insert(rows);
+      if (error) throw error;
+    }
+  }
+
   // Insert new boss kills (avoid duplicates by checking boss_name + character presence)
   if (data.boss_kills?.length) {
     for (const kill of data.boss_kills) {

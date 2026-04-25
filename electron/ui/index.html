@@ -1,235 +1,344 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Compapion</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Compapion</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-    body {
-      font-family: "Segoe UI", system-ui, sans-serif;
-      background: #1a1a2e;
-      color: #e0e0e0;
-      height: 420px;
-      width: 320px;
-      overflow: hidden;
-      user-select: none;
-    }
+      body {
+        font-family: "Segoe UI", system-ui, sans-serif;
+        background: #1a1a2e;
+        color: #e0e0e0;
+        height: 520px;
+        width: 320px;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        user-select: none;
+      }
 
-    header {
-      background: #16213e;
-      padding: 12px 16px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      border-bottom: 1px solid #0f3460;
-    }
+      header {
+        background: #16213e;
+        padding: 10px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #0f3460;
+        flex-shrink: 0;
+      }
 
-    header img#murloc {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
+      header h1 {
+        font-size: 16px;
+        font-weight: 700;
+        color: #e94560;
+        letter-spacing: 0.5px;
+      }
 
-    header h1 {
-      font-size: 16px;
-      font-weight: 700;
-      color: #e94560;
-      letter-spacing: 0.5px;
-    }
+      .pin-btn {
+        background: none;
+        border: 1px solid #1a4a80;
+        border-radius: 4px;
+        color: #888;
+        padding: 3px 8px;
+        font-size: 11px;
+        cursor: pointer;
+        font-weight: 400;
+      }
+      .pin-btn:hover  { background: #0f3460; color: #e0e0e0; }
+      .pin-btn.active { background: #0f3460; color: #e94560; border-color: #e94560; }
 
-    header p {
-      font-size: 11px;
-      color: #888;
-    }
+      .status-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        background: #0f3460;
+        font-size: 13px;
+        flex-shrink: 0;
+      }
 
-    .status-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 16px;
-      background: #0f3460;
-      font-size: 13px;
-    }
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .dot.idle    { background: #aaa; }
+      .dot.syncing { background: #f0c040; animation: pulse 1s infinite; }
+      .dot.ok      { background: #4caf50; }
+      .dot.error   { background: #e94560; }
 
-    .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .dot.idle    { background: #aaa; }
-    .dot.syncing { background: #f0c040; animation: pulse 1s infinite; }
-    .dot.ok      { background: #4caf50; }
-    .dot.error   { background: #e94560; }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50%      { opacity: 0.4; }
+      }
 
-    @keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+      .section {
+        padding: 10px 16px 0;
+        flex-shrink: 0;
+      }
 
-    .last-sync {
-      padding: 8px 16px 4px;
-      font-size: 11px;
-      color: #888;
-    }
+      .section label {
+        font-size: 11px;
+        color: #aaa;
+        display: block;
+        margin-bottom: 4px;
+      }
 
-    .section {
-      padding: 12px 16px 0;
-    }
+      .path-row {
+        display: flex;
+        gap: 6px;
+      }
 
-    .section label {
-      font-size: 11px;
-      color: #aaa;
-      display: block;
-      margin-bottom: 4px;
-    }
+      .path-row input {
+        flex: 1;
+        background: #0f3460;
+        border: 1px solid #1a4a80;
+        border-radius: 4px;
+        color: #e0e0e0;
+        padding: 5px 8px;
+        font-size: 12px;
+      }
 
-    .path-row {
-      display: flex;
-      gap: 6px;
-    }
+      button {
+        background: #e94560;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        padding: 6px 12px;
+        cursor: pointer;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      button:hover  { background: #c73652; }
+      button:active { transform: scale(0.97); }
+      button.secondary       { background: #0f3460; color: #e0e0e0; }
+      button.secondary:hover { background: #1a4a80; }
 
-    .path-row input {
-      flex: 1;
-      background: #0f3460;
-      border: 1px solid #1a4a80;
-      border-radius: 4px;
-      color: #e0e0e0;
-      padding: 5px 8px;
-      font-size: 12px;
-    }
+      .error-msg {
+        padding: 0 16px;
+        font-size: 11px;
+        color: #e94560;
+        min-height: 16px;
+        flex-shrink: 0;
+      }
 
-    button {
-      background: #e94560;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      padding: 6px 12px;
-      cursor: pointer;
-      font-size: 12px;
-      font-weight: 600;
-    }
-    button:hover { background: #c73652; }
-    button:active { transform: scale(0.97); }
-    button.secondary {
-      background: #0f3460;
-      color: #e0e0e0;
-    }
-    button.secondary:hover { background: #1a4a80; }
+      .recipe-section {
+        padding: 10px 16px 0;
+        flex: 1;
+        overflow-y: auto;
+      }
 
-    .actions {
-      padding: 16px;
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+      .recipe-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
 
-    .error-msg {
-      padding: 0 16px;
-      font-size: 11px;
-      color: #e94560;
-      min-height: 16px;
-    }
+      .recipe-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 4px;
+        flex-shrink: 0;
+        background: #0f3460;
+        object-fit: cover;
+      }
 
-    footer {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      padding: 8px 16px;
-      font-size: 10px;
-      color: #555;
-      text-align: center;
-      border-top: 1px solid #0f3460;
-    }
-  </style>
-</head>
-<body>
+      .recipe-text {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
 
-<header>
-  <img id="murloc" src="murloc.png" onerror="this.style.display='none'" alt="" />
-  <div>
-    <h1>Compapion</h1>
-    <p>Classic TBC Crafted-Gear Tracker</p>
-  </div>
-</header>
+      .recipe-prof {
+        font-size: 12px;
+        color: #e0e0e0;
+        font-weight: 600;
+      }
 
-<div class="status-bar">
-  <div class="dot idle" id="dot"></div>
-  <span id="status-text">Idle</span>
-</div>
+      .recipe-time {
+        font-size: 11px;
+        color: #4caf50;
+      }
 
-<div class="last-sync" id="last-sync">Never synced</div>
+      .recipe-hint {
+        font-size: 11px;
+        color: #555;
+      }
 
-<div class="section">
-  <label>WoW Installation Directory</label>
-  <div class="path-row">
-    <input id="wow-dir" type="text" placeholder="C:\World of Warcraft" readonly />
-    <button id="btn-browse" class="secondary">Browse</button>
-  </div>
-</div>
+      .actions {
+        padding: 12px 16px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        flex-shrink: 0;
+        border-top: 1px solid #0f3460;
+      }
 
-<div class="error-msg" id="error-msg"></div>
+      .status-msg {
+        padding: 0 16px 8px;
+        font-size: 11px;
+        min-height: 16px;
+        flex-shrink: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Compapion</h1>
+      <button class="pin-btn" id="btn-pin">📌 Pin</button>
+    </header>
 
-<div class="actions">
-  <button id="btn-sync">Sync Now</button>
-  <button id="btn-logs" class="secondary">Copy Logs</button>
-</div>
-<div class="error-msg" id="copy-msg"></div>
+    <div class="status-bar">
+      <div class="dot idle" id="dot"></div>
+      <span id="status-text">Idle</span>
+    </div>
 
-<footer>Data syncs on skill-up, gear change, boss kill, and logout.</footer>
+    <div class="section">
+      <label>WoW Installation Directory</label>
+      <div class="path-row">
+        <input id="wow-dir" type="text" placeholder="C:\World of Warcraft" readonly />
+        <button id="btn-browse" class="secondary">Browse</button>
+      </div>
+    </div>
 
-<script>
-  const api = window.compapion;
+    <div class="error-msg" id="error-msg"></div>
 
-  const dot = document.getElementById('dot');
-  const statusText = document.getElementById('status-text');
-  const lastSync = document.getElementById('last-sync');
-  const errorMsg = document.getElementById('error-msg');
-  const wowDirInput = document.getElementById('wow-dir');
+    <div class="recipe-section">
+      <div id="recipe-rows"></div>
+    </div>
 
-  const STATUS_LABELS = { idle: 'Idle', syncing: 'Syncing…', ok: 'Up to date', error: 'Error' };
+    <div class="actions">
+      <button id="btn-sync">Sync Now</button>
+      <button id="btn-install" class="secondary">Install Addon</button>
+      <button id="btn-logs" class="secondary">Copy Logs</button>
+    </div>
+    <div class="status-msg" id="status-msg"></div>
 
-  function applyState(state) {
-    dot.className = 'dot ' + state.status;
-    statusText.textContent = STATUS_LABELS[state.status] ?? state.status;
-    if (state.lastSync) {
-      const d = new Date(state.lastSync);
-      const mins = Math.floor((Date.now() - d.getTime()) / 60000);
-      lastSync.textContent = mins < 1 ? 'Last sync: just now' : `Last sync: ${mins}m ago`;
-    }
-    errorMsg.textContent = state.lastError ?? '';
-  }
+    <script>
+      const api = window.compapion;
 
-  function applyConfig(cfg) {
-    wowDirInput.value = cfg.wowDir ?? '';
-  }
+      const dot         = document.getElementById("dot");
+      const statusText  = document.getElementById("status-text");
+      const errorMsg    = document.getElementById("error-msg");
+      const wowDirInput = document.getElementById("wow-dir");
+      const pinBtn      = document.getElementById("btn-pin");
 
-  api.onState(applyState);
-  api.onConfig(applyConfig);
+      const STATUS_LABELS = {
+        idle:    "Idle",
+        syncing: "Syncing…",
+        ok:      "Up to date",
+        error:   "Error",
+      };
 
-  Promise.all([api.getState(), api.getConfig()]).then(([state, cfg]) => {
-    applyState(state);
-    applyConfig(cfg);
-  });
+      const PROF_ICONS = {
+        "Alchemy":        "trade_alchemy",
+        "Blacksmithing":  "trade_blacksmithing",
+        "Enchanting":     "trade_engraving",
+        "Engineering":    "trade_engineering",
+        "Herbalism":      "spell_nature_naturetouchgrow",
+        "Jewelcrafting":  "inv_misc_gem_01",
+        "Leatherworking": "trade_leatherworking",
+        "Mining":         "trade_mining",
+        "Skinning":       "inv_misc_pelt_wolf_01",
+        "Tailoring":      "trade_tailoring",
+        "Cooking":        "inv_misc_food_15",
+        "First Aid":      "spell_holy_sealofsacrifice",
+        "Fishing":        "trade_fishing",
+      };
 
-  document.getElementById('btn-sync').addEventListener('click', async () => {
-    statusText.textContent = 'Syncing…';
-    await api.manualSync();
-  });
+      function profIcon(profession) {
+        const icon = PROF_ICONS[profession] ?? "inv_misc_questionmark";
+        return `https://wow.zamimg.com/images/wow/icons/medium/${icon}.jpg`;
+      }
 
-  document.getElementById('btn-logs').addEventListener('click', async () => {
-    const result = await api.copyLogs();
-    const msg = document.getElementById('copy-msg');
-    msg.style.color = result.error ? '#e94560' : '#4caf50';
-    msg.textContent = result.error ?? 'Logs copied to clipboard!';
-    setTimeout(() => { msg.textContent = ''; }, 3000);
-  });
+      function showMsg(text, color) {
+        const el = document.getElementById("status-msg");
+        el.style.color = color ?? "#4caf50";
+        el.textContent = text;
+        setTimeout(() => { el.textContent = ""; }, 3000);
+      }
 
-  document.getElementById('btn-browse').addEventListener('click', async () => {
-    const cfg = await api.pickWowDir();
-    if (cfg) applyConfig(cfg);
-  });
-</script>
-</body>
+      // ── Pin ──────────────────────────────────────────────────────────────────
+      let pinned = false;
+      pinBtn.addEventListener("click", () => {
+        pinned = !pinned;
+        pinBtn.classList.toggle("active", pinned);
+        pinBtn.textContent = pinned ? "📌 Pinned" : "📌 Pin";
+        api.saveConfig({ pinned });
+      });
+
+      // ── State ────────────────────────────────────────────────────────────────
+      function applyState(state) {
+        dot.className = "dot " + state.status;
+        statusText.textContent = STATUS_LABELS[state.status] ?? state.status;
+        errorMsg.textContent = state.lastError ?? "";
+
+        const recipeRows = document.getElementById("recipe-rows");
+        const entries    = state.recipeSync ?? [];
+        if (entries.length > 0) {
+          recipeRows.innerHTML = entries.map((e) => `
+            <div class="recipe-row">
+              <img class="recipe-icon" src="${profIcon(e.profession)}" alt="${e.profession}" />
+              <div class="recipe-text">
+                <span class="recipe-prof">${e.profession} (skill): ${e.count} recipes available</span>
+              </div>
+            </div>
+          `).join("");
+        } else {
+          recipeRows.innerHTML = `<p class="recipe-hint">Open a profession window in-game to sync recipes.</p>`;
+        }
+      }
+
+      function applyConfig(cfg) {
+        wowDirInput.value = cfg.wowDir ?? "";
+        if (typeof cfg.pinned === "boolean") {
+          pinned = cfg.pinned;
+          pinBtn.classList.toggle("active", pinned);
+          pinBtn.textContent = pinned ? "📌 Pinned" : "📌 Pin";
+        }
+        const installBtn = document.getElementById("btn-install");
+        installBtn.textContent = cfg.addonInstalled ? "Update Addon" : "Install Addon";
+      }
+
+      api.onState(applyState);
+      api.onConfig(applyConfig);
+
+      Promise.all([api.getState(), api.getConfig()]).then(([state, cfg]) => {
+        applyState(state);
+        applyConfig(cfg);
+      });
+
+      document.getElementById("btn-sync").addEventListener("click", async () => {
+        await api.manualSync();
+      });
+
+      document.getElementById("btn-install").addEventListener("click", async () => {
+        const result = await api.installAddon();
+        if (result.error) {
+          showMsg(result.error, "#e94560");
+        } else {
+          showMsg("Addon installed! Restart WoW if it's running.", "#4caf50");
+          document.getElementById("btn-install").textContent = "Update Addon";
+        }
+      });
+
+      document.getElementById("btn-logs").addEventListener("click", async () => {
+        const result = await api.copyLogs();
+        showMsg(result.error ?? "Logs copied!", result.error ? "#e94560" : "#4caf50");
+      });
+
+      document.getElementById("btn-browse").addEventListener("click", async () => {
+        const cfg = await api.pickWowDir();
+        if (cfg) applyConfig(cfg);
+      });
+    </script>
+  </body>
 </html>

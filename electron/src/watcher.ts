@@ -6,18 +6,27 @@ import { syncToSupabase } from "./supabase-sync";
 
 type SyncStatus = "idle" | "syncing" | "ok" | "error";
 
+export interface RecipeSyncEntry {
+  profession: string;
+  count: number;
+  syncedAt: number; // unix seconds from Lua's time()
+}
+
 export interface WatcherState {
   status: SyncStatus;
   lastSync: Date | null;
   lastError: string | null;
+  lastSyncDetail: string | null;
+  recipeSync: RecipeSyncEntry[];
 }
 
 export class SavedVarsWatcher {
   private watcher: chokidar.FSWatcher | null = null;
   private heartbeatTimer: NodeJS.Timeout | null = null;
   private lastHash: string | null = null;
-  private state: WatcherState = { status: "idle", lastSync: null, lastError: null };
+  private state: WatcherState = { status: "idle", lastSync: null, lastError: null, lastSyncDetail: null, recipeSync: [] };
   private onStateChange: (state: WatcherState) => void;
+  onSynced: ((charName: string, professions: { name: string; skill: number }[]) => void) | null = null;
 
   constructor(onStateChange: (state: WatcherState) => void) {
     this.onStateChange = onStateChange;
@@ -73,9 +82,22 @@ export class SavedVarsWatcher {
 
     try {
       await syncToSupabase(data);
-      this.setState({ status: "ok", lastSync: new Date(), lastError: null });
+      const detail = data.character?.name
+        ? `${data.character.name} — ${(data.professions ?? []).map((p) => `${p.name}: ${p.skill}`).join(", ") || "no professions"}`
+        : null;
+      const recipeSync: RecipeSyncEntry[] = Object.entries(data.known_recipes ?? {}).map(
+        ([profession, entry]) => ({
+          profession,
+          count: entry.recipes?.length ?? 0,
+          syncedAt: entry.synced_at,
+        })
+      );
+      this.setState({ status: "ok", lastSync: new Date(), lastError: null, lastSyncDetail: detail, recipeSync });
+      if (this.onSynced && data.character?.name && data.professions?.length) {
+        this.onSynced(data.character.name, data.professions);
+      }
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
+      const msg = err instanceof Error ? err.message : (typeof err === "object" ? JSON.stringify(err) : String(err));
       this.setState({ status: "error", lastError: msg });
     }
   }

@@ -29,11 +29,17 @@ export interface CharacterData {
   level: number;
 }
 
+export interface KnownRecipeEntry {
+  recipes: string[];
+  synced_at: number;
+}
+
 export interface CompapionSavedVars {
   character: CharacterData;
   professions: Profession[];
   gear: GearSlot[];
   boss_kills: BossKill[];
+  known_recipes?: Record<string, KnownRecipeEntry>;
   last_updated: number;
   version: number;
 }

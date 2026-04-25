@@ -36,6 +36,7 @@ const CONFIG_PATH = path.join(app.getPath("userData"), "config.json");
 interface Config {
   wowDir: string | null;
   accountName: string | null;
+  pinned?: boolean;
 }
 
 function loadConfig(): Config {
@@ -65,12 +66,18 @@ function buildLuaPath(cfg: Config): string | null {
 // ─── Tray icon helpers ───────────────────────────────────────────────────────
 
 const ICON_DIR = app.isPackaged
-  ? path.join(process.resourcesPath, "assets")
+  ? path.join(process.resourcesPath, "app.asar.unpacked", "assets")
   : path.join(app.getAppPath(), "assets");
 
+const ADDON_SRC = app.isPackaged
+  ? path.join(process.resourcesPath, "app.asar.unpacked", "addon")
+  : path.join(app.getAppPath(), "addon");
+
 function getTrayIcon(_status: WatcherState["status"]): Electron.NativeImage {
-  const file = path.join(ICON_DIR, "tray.png");
-  if (fs.existsSync(file)) return nativeImage.createFromPath(file);
+  for (const name of ["tray.png", "icon.png"]) {
+    const file = path.join(ICON_DIR, name);
+    if (fs.existsSync(file)) return nativeImage.createFromPath(file);
+  }
   return nativeImage.createEmpty();
 }
 
@@ -82,7 +89,7 @@ function createWindow(state: WatcherState, config: Config): BrowserWindow {
   const iconFile = path.join(ICON_DIR, "icon.png");
   const win = new BrowserWindow({
     width: 320,
-    height: 420,
+    height: 520,
     resizable: false,
     frame: false,
     alwaysOnTop: true,
@@ -97,7 +104,7 @@ function createWindow(state: WatcherState, config: Config): BrowserWindow {
   win.loadFile(path.join(app.getAppPath(), "ui", "index.html"));
 
   win.on("blur", () => {
-    win.hide();
+    if (!config.pinned) win.hide();
   });
 
   return win;
@@ -109,12 +116,15 @@ app.whenReady().then(() => {
   const config = loadConfig();
   let watcher: SavedVarsWatcher | null = null;
   let tray: Tray;
-  let state: WatcherState = { status: "idle", lastSync: null, lastError: null };
+  let state: WatcherState = { status: "idle", lastSync: null, lastError: null, lastSyncDetail: null, recipeSync: [] };
 
   function onStateChange(newState: WatcherState) {
     state = newState;
     tray.setImage(getTrayIcon(state.status));
-    log(`Status: ${state.status}${state.lastError ? " — " + state.lastError : ""}`);
+    const errDetail = state.lastError
+      ? " — " + (typeof state.lastError === "object" ? JSON.stringify(state.lastError) : state.lastError)
+      : "";
+    log(`Status: ${state.status}${errDetail}`);
     if (mainWindow?.isVisible()) {
       mainWindow.webContents.send("state-update", state);
     }
@@ -125,6 +135,14 @@ app.whenReady().then(() => {
     if (!luaPath) return;
     watcher?.stop();
     watcher = new SavedVarsWatcher(onStateChange);
+    watcher.onSynced = (charName, professions) => {
+      const profStr = professions.map((p) => `${p.name}: ${p.skill}`).join(" | ");
+      tray.displayBalloon?.({
+        title: `Compapion — ${charName} synced`,
+        content: profStr || "Session saved.",
+        iconType: "info",
+      });
+    };
     watcher.start(luaPath);
   }
 
@@ -147,7 +165,7 @@ app.whenReady().then(() => {
       mainWindow.hide();
     } else {
       const { x, y, width } = tray.getBounds();
-      mainWindow.setPosition(Math.round(x - 320 / 2 + width / 2), Math.round(y - 420));
+      mainWindow.setPosition(Math.round(x - 320 / 2 + width / 2), Math.round(y - 520));
       mainWindow.show();
       mainWindow.webContents.send("state-update", state);
       mainWindow.webContents.send("config-update", config);
@@ -192,6 +210,23 @@ app.whenReady().then(() => {
     saveConfig(config);
     startWatcher();
     return config;
+  });
+
+  ipcMain.handle("install-addon", () => {
+    if (!config.wowDir) return { error: "Set your WoW directory first." };
+    const dest = path.join(config.wowDir, "Interface", "AddOns", "Compapion");
+    try {
+      fs.mkdirSync(dest, { recursive: true });
+      for (const file of ["Compapion.lua", "Compapion.toc"]) {
+        fs.copyFileSync(path.join(ADDON_SRC, file), path.join(dest, file));
+      }
+      log(`Addon installed to ${dest}`);
+      return { ok: true };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      log(`Addon install failed: ${msg}`);
+      return { error: msg };
+    }
   });
 
   ipcMain.handle("copy-logs", () => {

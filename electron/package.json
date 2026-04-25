@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "tsc --watch & electron .",
     "build": "tsc",
-    "dist": "tsc && electron-builder"
+    "dist": "tsc && electron-builder",
+    "dev:windows": "powershell -ExecutionPolicy Bypass -File sync-from-wsl.ps1 && tsc && electron-builder --win --x64 --dir",
+    "dist:windows": "powershell -ExecutionPolicy Bypass -File sync-from-wsl.ps1 && tsc && electron-builder --win --x64",
+    "sync:addon": "powershell -ExecutionPolicy Bypass -Command \"$env:SYNC_ADDON='1'; & '.\\sync-from-wsl.ps1'\""
   },
   "build": {
     "forceCodeSigning": false,
@@ -14,16 +17,18 @@
     "productName": "Compapion",
     "win": {
       "target": "zip",
-      "icon": "assets/icon.ico"
+      "icon": "assets/icon.png"
     },
     "files": [
       "dist/**/*",
-      "assets/**/*",
-      "ui/**/*"
+      "assets/*",
+      "ui/**/*",
+      "addon/**/*"
     ],
     "asarUnpack": [
       "assets/**/*",
-      "ui/**/*"
+      "ui/**/*",
+      "addon/**/*"
     ]
   },
   "dependencies": {

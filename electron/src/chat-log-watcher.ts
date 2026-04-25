@@ -131,13 +131,13 @@ export class ChatLogWatcher {
       const delta = parseSyncLine(line);
       if (!delta?.n) continue;
 
-      this.onStateChange({ status: "syncing", lastSync: null, lastError: null });
+      this.onStateChange({ status: "syncing", lastSync: null, lastError: null, lastSyncDetail: null, recipeSync: [] });
       try {
         await applyDelta(delta);
-        this.onStateChange({ status: "ok", lastSync: new Date(), lastError: null });
+        this.onStateChange({ status: "ok", lastSync: new Date(), lastError: null, lastSyncDetail: null, recipeSync: [] });
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
-        this.onStateChange({ status: "error", lastSync: null, lastError: msg });
+        this.onStateChange({ status: "error", lastSync: null, lastError: msg, lastSyncDetail: null, recipeSync: [] });
       }
     }
   }
